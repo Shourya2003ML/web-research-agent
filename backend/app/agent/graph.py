@@ -1,23 +1,31 @@
 #Building and Compiling Graph
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.agent.state import ResearchState
 from app.agent.nodes import (router_node, search_node, summarize_node, respond_node, route_decision)
-import sqlite3
 import os
+import aiosqlite
 
 #Building the graph
-def build_graph():
+async def build_graph():
     """
     Assembling the graph using LangGraph StateGraph.
     Using Sqlite3 for checkpointing (Short Term Memory) for thread level persistence
     Use .invoke() and .stream() for invoking and streaming using LangGraph.
+    Using Async graph builder - must be awaited
+    AsyncSqliteSaver requires async context manager
     """
 
     #Establishing the sql connection
-    db_path = os.getenv("SQL_DB_PATH", "data/checkpointers.db")
-    conn = sqlite3.connect(db_path, check_same_thread = False)
-    checkpointer = SqliteSaver(conn)
+    db_path = os.getenv("SQLITE_DB_PATH", "data/checkpointers.db")
+
+    db_dir = os.path.dirname(db_path)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok = True)
+    
+    conn = await aiosqlite.connect(db_path)
+    checkpointer =  AsyncSqliteSaver(conn)
+
 
     #Intializing the Graph
     graph = StateGraph(ResearchState)
@@ -44,7 +52,7 @@ def build_graph():
     #Compiling the graph with checkpointers
     return graph.compile(checkpointer = checkpointer)
 
-compiled_graph = build_graph()
+#compiled_graph = build_graph()
 
 
 
