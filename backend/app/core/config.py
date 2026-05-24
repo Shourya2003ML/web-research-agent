@@ -2,7 +2,7 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    gemini_api_key : str
+    google_api_key : str
     tavily_api_key : str
     langchain_api_key: str = ""
     langchain_tracing_v2: str = "false"

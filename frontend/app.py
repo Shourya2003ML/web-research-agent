@@ -27,17 +27,14 @@ async def set_starters(user: cl.User | None = None, chat_profile: str | None = N
         cl.Starter(
             label = "Latest AI News",
             message = "What are the most import AI developments this week?",
-            icon = "🤖",
         ),
         cl.Starter(
             label = "Explain a concept",
             message = "Explain how langgraph's checkpointing works in simple terms",
-            icon ="💡",
         ),
         cl.Starter(
             label = "Quick Search",
             message = "Give me 3 point summary of the current state of fusion energy.",
-            icon = "⚡",
         ),
     ]
 
@@ -81,10 +78,10 @@ async def on_message(message: cl.Message):
     config = {"configurable": {"thread_id": thread_id}}
 
     node_labels = {
-        "router":    "🧭 Routing query",
-        "search":    "🌐 Searching the web",
-        "summarise": "📝 Summarising results",
-        "respond":   "💬 Composing answer",
+        "router":    "Routing query",
+        "search":    "Searching the web",
+        "summarise": "Summarising results",
+        "respond":   "Composing answer",
     }
 
     #Empty message bubbles to stream into

@@ -6,3 +6,4 @@ langchain-tavily
 aiosqlite
 python-dotenv
 langgraph-checkpoint-sqlite
+langchain-google-genai
