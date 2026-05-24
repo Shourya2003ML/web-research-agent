@@ -1,6 +1,6 @@
 #Building and Compiling Graph
 from langgraph.graph import StateGraph, START, END
-from langgraph_checkpoint_sqlite import AsyncSqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.agent.state import ResearchState
 from app.agent.nodes import (router_node, search_node, summarize_node, respond_node, route_decision)
 import os
