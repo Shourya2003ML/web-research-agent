@@ -7,11 +7,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8000:7860"
     env_file: .env
     volumes:
       - ./data:/tmp/data                    
       - ./backend:/backend              #importing backend so that chainlit can use it
+      - ./frontend:/app
     networks:
       - agent-net
 

@@ -17,6 +17,6 @@ COPY chainlit.md .
 RUN mkdir -p /tmp/data
 RUN mkdir -p /app/.chainlit
 
-EXPOSE 8000
+EXPOSE 7860
 
-CMD ["chainlit", "run", "app.py", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["chainlit", "run", "app.py", "--host", "0.0.0.0", "--port", "7860", "--reload"]
