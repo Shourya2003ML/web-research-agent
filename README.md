@@ -1,3 +1,12 @@
+---
+title: Web Research Agent
+emoji: 🔍
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 # 🔍 Agentic Web Research Assistant
 
 > A stateful AI agent that searches the web in real time, summarises results with citations, and remembers your full conversation across the session — built with LangGraph and Chainlit.
