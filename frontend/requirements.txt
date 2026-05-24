@@ -5,3 +5,4 @@ langchain-community
 langchain-tavily
 aiosqlite
 python-dotenv
+langgraph-checkpoint-sqlite
