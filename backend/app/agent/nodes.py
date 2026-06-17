@@ -21,8 +21,10 @@ def router_node (state: ResearchState) -> dict:
                            """
                            )
     last_message = state["messages"][-1]
+    #using new invocation to avoid leaking to history messages
     response = llm.invoke([system, last_message])
     needs_search = "search" in response.content.lower()
+
     return {"needs_search": needs_search, "query": last_message.content,}
 
 #Node 2: Search
@@ -61,13 +63,19 @@ def respond_node(state: ResearchState)-> dict:
     """
     Generates the final answer to send back to the user.
     """
+
+    tagged_llm = llm.with_config(tags = ["final_answer"])
+
     #If we searched then we use summary, otherwise we will use history
     if state.get("summary"):
-        content = state["summary"]
+        #wrapping the summary
+        system = SystemMessage(content = "Present the following research summary clearly to the user.")
+        human = HumanMessage(content = state["summary"])
+        response = tagged_llm.invoke([system, human])
+        content = response.content
     else:
         system = SystemMessage(content = "Answer user's query using the conversation history")
         #tagging so that chainlit can filter its stream events
-        tagged_llm = llm.with_config(tags = ["final_answer"])
         response = tagged_llm.invoke([system] + state["messages"])
         content = response.content
 
