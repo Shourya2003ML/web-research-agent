@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, "/backend")
 
 
-from backend.app.agent.graph import build_graph 
+from app.agent.graph import build_graph 
 load_dotenv()
 
 #root_path = Path(__file__).resolve().parent.parent
@@ -53,7 +53,7 @@ async def on_chat_start():
 
     await cl.Message(
         content = (
-            "👋 Hello! I'm your **Agentic Web Research Assistant**.\n\n"
+            "Hello! I'm your **Agentic Web Research Assistant**.\n\n"
             "Ask me anything — I'll search the web, summarise results, "
             "and remember our entire conversation."
         )
@@ -67,16 +67,16 @@ async def on_message(message: cl.Message):
     thread_id = cl.user_session.get("thread_id")
 
     if graph is None or thread_id is None:
-        await cl.Message(content="⚠️ Session not initialised. Please refresh.").send()
+        await cl.Message(content="Session not initialised. Please refresh.").send()
         return
 
     config = {"configurable": {"thread_id": thread_id}}
 
     node_labels = {
-        "router":     "🧭 Routing query",
-        "search":     "🌐 Searching the web",
-        "summarize":  "📝 Summarising results",
-        "respond":    "💬 Composing answer",
+        "router":     "Routing query",
+        "search":     "Searching the web",
+        "summarize":  "Summarising results",
+        "respond":    "Composing answer",
     }
 
     answer_msg = cl.Message(content="")
@@ -115,7 +115,7 @@ async def on_message(message: cl.Message):
                         streamed_content += chunk.content
 
     except Exception as e:
-        await answer_msg.stream_token(f"\n\n❌ Error: {str(e)}")
+        await answer_msg.stream_token(f"\n\nError: {str(e)}")
 
     # Only use final_content fallback if nothing was streamed
     if not streamed_content and final_content:
