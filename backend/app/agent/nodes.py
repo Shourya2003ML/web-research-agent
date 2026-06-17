@@ -38,12 +38,20 @@ def summarize_node(state: ResearchState)->dict:
     """
     Make the search results in readable format
     """
-    results_text = "\n\n".join([f"Source: {r.get('url', 'N/A')}\nContent: {r.get('content', '')}" for r in state["search_results"]])
+    raw = state["search_results"]
+
+    #Handling list and string due to tavily version conflict
+    if isinstance(raw, str):
+        results_text = raw
+    elif isinstance(raw, list):
+        results_text = "\n\n".join([f"Source: {r.get('url', 'N/A')}\nContent: {r.get('content', '')}" for r in state["search_results"]])
+    else:
+        results_text = str(raw)
     system = SystemMessage(content = 
-                           """
+                        """
                             Summarize the following search results into a clear, concise answer.
                             Include source URLs as footnotes.
-                           """)
+                        """)
     human = HumanMessage(content = f"Query: {state['query']}\n\nResults:\n{results_text}")
     response = llm.invoke([system, human])
     return {"summary": response.content}
