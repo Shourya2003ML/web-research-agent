@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, "/backend")
 
 
-from app.agent.graph import build_graph 
+from backend.app.agent.graph import build_graph 
 load_dotenv()
 
 #root_path = Path(__file__).resolve().parent.parent
@@ -63,97 +63,65 @@ async def on_chat_start():
 #when message has been sent
 @cl.on_message
 async def on_message(message: cl.Message):
-    """
-    Called everytime the user sends a message.
-    Streaming the langgraph response with steps
-    """
-
-    graph = cl.user_session.get("graph")
+    graph     = cl.user_session.get("graph")
     thread_id = cl.user_session.get("thread_id")
 
     if graph is None or thread_id is None:
-        await cl.Message(content = "Session not initalized. Please refresh the page.").send()
-        return 
-    
+        await cl.Message(content="⚠️ Session not initialised. Please refresh.").send()
+        return
+
     config = {"configurable": {"thread_id": thread_id}}
 
     node_labels = {
-        "router":    "Routing query",
-        "search":    "Searching the web",
-        "summarise": "Summarising results",
-        "respond":   "Composing answer",
+        "router":     "🧭 Routing query",
+        "search":     "🌐 Searching the web",
+        "summarize":  "📝 Summarising results",
+        "respond":    "💬 Composing answer",
     }
 
-    #Empty message bubbles to stream into
     answer_msg = cl.Message(content="")
     await answer_msg.send()
 
-    current_step = None
     final_content = ""
+    streamed_content = ""
 
     try:
         async for event in graph.astream_events(
-            {"messages": [HumanMessage(content = message.content)]},
-            config = config,
+            {"messages": [HumanMessage(content=message.content)]},
+            config=config,
         ):
             kind = event["event"]
             name = event.get("name", "")
 
-            #open side panel when new node start
+            # Show a Step panel for each node
             if kind == "on_chain_start" and name in node_labels:
-                #current_step = cl.Step(name = node_labels[name])
-                #await current_step.__aenter__()
                 async with cl.Step(name=node_labels[name]):
                     pass
 
-
-            #Close side panel when the node finish
-            if kind == "on_chain_end" and name in node_labels:
+            # Only capture final state from the respond node specifically
+            if kind == "on_chain_end" and name == "respond":
                 output = event.get("data", {}).get("output", {})
                 messages = output.get("messages", [])
                 if messages:
                     final_content = messages[-1].content
-                """
-                if current_step:
-                    #show output in step panel
-                    output = event.get("data", {}).get("output", {})
-                    if isinstance(output, dict):
-                        if output.get("needs_search") is not None:
-                            current_step.output = (
-                                "will search web" if output["needs_search"]
-                                else "Answering from memory"
-                            )
-                        elif output.get("search results"):
-                            current_step.output = (
-                                f"Found {len(output['search_results'])} results"
-                            )
-                        elif output.get("summary"):
-                            current_step.output = "Summary Ready"
-                    await current_step.__aexit__(None, None, None)
-                    current_step = None
-                """
 
-            #Streaming tokens from the final respod node's LLM
+            # Stream tokens only from final_answer tagged LLM calls
             if kind == "on_chat_model_stream":
-                chunk = event["data"].get("chunk")
-                if chunk and hasattr(chunk, "content") and chunk.content:
-                    await answer_msg.stream_token(chunk.content)
-                """
                 tags = event.get("tags", [])
                 if "final_answer" in tags:
                     chunk = event["data"].get("chunk")
-                    if chunk and chunk.content:
+                    if chunk and hasattr(chunk, "content") and chunk.content:
                         await answer_msg.stream_token(chunk.content)
-                """
+                        streamed_content += chunk.content
 
     except Exception as e:
-        await answer_msg.stream_token(f"\n\nError: {str(e)}")
+        await answer_msg.stream_token(f"\n\n❌ Error: {str(e)}")
 
-    if not answer_msg.content and final_content:
+    # Only use final_content fallback if nothing was streamed
+    if not streamed_content and final_content:
         answer_msg.content = final_content
 
     await answer_msg.update()
-
 
 #On stopping
 @cl.on_stop
