@@ -9,3 +9,4 @@ tavily-python
 python-dotenv
 pydantic
 langgraph-checkpoint-sqlite
+langchain-tavily
