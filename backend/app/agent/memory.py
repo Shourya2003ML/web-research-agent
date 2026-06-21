@@ -12,15 +12,27 @@ def retrieve_memories(query: str, user_id: str)->str:
     """
 
     try:
-        results = mem0_client.search(query = query,
+        response = mem0_client.search(query = query,
                                     filters = {"user_id": user_id},
                                     limit=5,)
         
+        print(f"DEBUG Mem0 response type: {type(response)}, value: {response}")
+
+        if isinstance(response, dict):
+            results = response.get("results", [])
+        else:
+            results = response
+
         if not results:
             return ""
-        
-        memories = [r["memory"] for r in results]
+
+        memories = [r["memory"] for r in results if isinstance(r, dict) and "memory" in r]
+
+        if not memories:
+            return ""
+
         return "Known facts about this user: \n" + "\n".join(f"- {m}" for m in memories)
+ 
     except Exception as e:
         print(f"Mem0 retrieval error: {e}")
         return "" 
