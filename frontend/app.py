@@ -103,6 +103,16 @@ async def on_message(message: cl.Message):
                 async with cl.Step(name=node_labels[name]):
                     pass
 
+            #Search node for cache
+            if kind == "on_chain_end" and name == "search":
+                output = event.get("data", {}).get("output", {})
+                if output.get("cache_hit"):
+                    async with cl.Step(name = "Found in cache"):
+                        pass
+                else:
+                    async with cl.Step(name= "Searched the web"):
+                        pass
+
             # Only capture final state from the respond node specifically
             if kind == "on_chain_end" and name == "respond":
                 output = event.get("data", {}).get("output", {})

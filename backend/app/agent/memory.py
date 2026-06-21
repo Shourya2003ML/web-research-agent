@@ -12,7 +12,10 @@ def retrieve_memories(query: str, user_id: str)->str:
     """
 
     try:
-        results = mem0_client.search(query = query, user_id = user_id, limit=5)
+        results = mem0_client.search(query = query,
+                                    filters = {"user_id": user_id},
+                                    limit=5,)
+        
         if not results:
             return ""
         

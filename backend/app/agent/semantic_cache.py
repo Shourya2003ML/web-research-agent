@@ -2,7 +2,9 @@ import redis
 from redis.commands.search.field import VectorField, TextField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
+from redis.commands.search.result import Result
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from typing import cast
 import numpy as np
 import json
 import hashlib
@@ -15,7 +17,10 @@ VECTOR_DIM = 768
 SIMILARITY_THRESHOLD = 0.92
 
 embeddings_model = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
-redis_client = redis.from_url(os.getenv("REDIS_URL"), decode_responses = False)
+REDIS_URL = os.getenv("REDIS_URL")
+if not REDIS_URL:
+    raise ValueError("REDIS_URL environment variable is not set")
+redis_client = redis.from_url(REDIS_URL, decode_responses = False)
 
 def _ensure_index():
     """
@@ -75,9 +80,11 @@ def get_cached_search(query: str)->list|None:
     )
 
     try:
-        results = redis_client.ft(INDEX_NAME).search(
+        raw_results = redis_client.ft(INDEX_NAME).search(
             redis_query, query_params = {"vec": vector_bytes}
         )
+        results = cast(Result, raw_results)
+
     except Exception as e:
         print(f"Semantic cache search error: {e}")
         return None
