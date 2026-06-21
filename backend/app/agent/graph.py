@@ -1,10 +1,9 @@
 #Building and Compiling Graph
+from langgraph.checkpoint.redis.aio import AsyncRedisSaver
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.agent.state import ResearchState
 from app.agent.nodes import (router_node, search_node, summarize_node, respond_node, route_decision)
 import os
-import aiosqlite
 
 #Building the graph
 async def build_graph():
@@ -16,15 +15,26 @@ async def build_graph():
     AsyncSqliteSaver requires async context manager
     """
 
-    #Establishing the sql connection
-    db_path = os.getenv("SQLITE_DB_PATH", "data/checkpointers.db")
+    redis_url = os.getenv("REDIS_URL");
 
-    db_dir = os.path.dirname(db_path)
-    if db_dir:
-        os.makedirs(db_dir, exist_ok = True)
+    if not redis_url:
+        raise ValueError("REDIS_URL environment variable is not set")
     
-    conn = await aiosqlite.connect(db_path)
-    checkpointer =  AsyncSqliteSaver(conn)
+    #AsyncRedisSaver for connection pooling 
+    checkpointer = AsyncRedisSaver(redis_url=redis_url)
+
+    #Initialzing the connection 
+    await checkpointer.asetup()
+
+    # #Establishing the sql connection
+    # db_path = os.getenv("SQLITE_DB_PATH", "data/checkpointers.db")
+
+    # db_dir = os.path.dirname(db_path)
+    # if db_dir:
+    #     os.makedirs(db_dir, exist_ok = True)
+    
+    # conn = await aiosqlite.connect(db_path)
+    # checkpointer =  AsyncSqliteSaver(conn)
 
 
     #Intializing the Graph

@@ -10,7 +10,6 @@ services:
       - "8000:7860"
     env_file: .env
     volumes:
-      - ./data:/tmp/data                    
       - ./backend:/backend              #importing backend so that chainlit can use it
       - ./frontend:/app
     networks:
