@@ -46,9 +46,12 @@ async def on_chat_start():
     Building the graph and storing for the current session.
     """
     thread_id = str(uuid.uuid4())
+    user_id = "shourya-demo-user"
+
     graph = await build_graph()
 
     cl.user_session.set("thread_id", thread_id)
+    cl.user_session.set("user_id", user_id)
     cl.user_session.set("graph", graph)
 
     await cl.Message(
@@ -64,6 +67,7 @@ async def on_chat_start():
 @cl.on_message
 async def on_message(message: cl.Message):
     graph     = cl.user_session.get("graph")
+    user_id = cl.user_session.get("user_id")
     thread_id = cl.user_session.get("thread_id")
 
     if graph is None or thread_id is None:
@@ -73,6 +77,7 @@ async def on_message(message: cl.Message):
     config = {"configurable": {"thread_id": thread_id}}
 
     node_labels = {
+        "retrieve_memory": "Recalling what I know already",
         "router":     "Routing query",
         "search":     "Searching the web",
         "summarize":  "Summarising results",
@@ -87,7 +92,7 @@ async def on_message(message: cl.Message):
 
     try:
         async for event in graph.astream_events(
-            {"messages": [HumanMessage(content=message.content)]},
+            {"messages": [HumanMessage(content=message.content)], "user_id": user_id},
             config=config,
         ):
             kind = event["event"]

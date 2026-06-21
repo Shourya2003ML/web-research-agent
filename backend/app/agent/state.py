@@ -12,3 +12,5 @@ class ResearchState(TypedDict):
     search_results: List[dict]
     needs_search: bool 
     summary: str
+    user_id: str
+    memory_context: str

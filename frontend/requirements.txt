@@ -1,9 +1,8 @@
 chainlit==2.11.1
 langgraph
-#langchain-openai
 langchain-community
 langchain-tavily
-#aiosqlite
 python-dotenv
 langgraph-checkpoint-redis
 langchain-google-genai
+mem0ai
