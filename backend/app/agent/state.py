@@ -14,3 +14,4 @@ class ResearchState(TypedDict):
     summary: str
     user_id: str
     memory_context: str
+    cache_hit: bool

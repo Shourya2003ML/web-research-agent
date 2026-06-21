@@ -4,6 +4,7 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from app.agent.tools import tavily_search
 from app.agent.state import ResearchState
 from app.agent.memory import retrieve_memories, save_interaction
+from app.agent.semantic_cache import get_cached_search, save_to_cache
 import os
 
 #initializing the llm
@@ -50,8 +51,20 @@ def search_node(state: ResearchState)->dict:
     """
     Calls Tavily and stores raw results in state
     """
-    results = tavily_search.invoke(state["query"])
-    return {"search_results": results}
+    query = state["query"]
+
+    #Check cache before making a Tavily Request
+    cached = get_cached_search(query)
+    if cached is not None:
+        return {"search_results": cached, "cache_hit": True}
+
+    #Cache miss - calling Tavily
+    results = tavily_search.invoke(query)
+
+    #Store for the future similar queries
+    save_to_cache(query, results)
+
+    return {"search_results": results, "cache_hit": False}
 
 #Node 4: Summarize
 def summarize_node(state: ResearchState)->dict:
@@ -107,7 +120,7 @@ def respond_node(state: ResearchState)-> dict:
             system_content += f"\n\n{memory_note}"
         
         system = SystemMessage(content = system_content)
-        
+
         #tagging so that chainlit can filter its stream events
         response = tagged_llm.invoke([system] + state["messages"])
         content = response.content
