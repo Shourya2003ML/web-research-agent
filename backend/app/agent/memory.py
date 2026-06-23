@@ -47,7 +47,7 @@ def save_interaction(user_message: str, ai_message: str, user_id: str)->None:
         mem0_client.add(
             messages = [
                 {"role": "user", "content": user_message},
-                {"role": "assisstant", "content": ai_message},
+                {"role": "assistant", "content": ai_message},
             ],
             user_id = user_id,
         )
