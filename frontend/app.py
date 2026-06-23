@@ -96,16 +96,16 @@ async def on_message(message: cl.Message):
             config=config,
         ):
             kind = event["event"]
-            name = event.get("name", "")
+            node_name = event.get("name", "")
 
             # Show a Step panel for each node
-            if kind == "on_chain_start" and name in node_labels:
-                async with cl.Step(name=node_labels[name]):
+            if kind == "on_chain_start" and node_name in node_labels:
+                async with cl.Step(name=node_labels[node_name]):
                     pass
 
             #Search node for cache
-            if kind == "on_chain_end" and name == "search":
-                output = event.get("data", {}).get("output", {})
+            if kind == "on_chain_end" and node_name == "search":
+                output = event.get("data", {}).get("output", {}) 
                 if output.get("cache_hit"):
                     async with cl.Step(name = "Found in cache"):
                         pass
@@ -114,9 +114,9 @@ async def on_message(message: cl.Message):
                         pass
 
             # Only capture final state from the respond node specifically
-            if kind == "on_chain_end" and name == "respond":
+            if kind == "on_chain_end" and node_name == "respond":
                 output = event.get("data", {}).get("output", {})
-                messages = output.get("messages", [])
+                messages = output.get("messages", []) if isinstance(output, dict) else []
                 if messages:
                     final_content = messages[-1].content
 
